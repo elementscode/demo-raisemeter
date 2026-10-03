@@ -1,0 +1,19 @@
+import "./style.css";
+import { formatMoney, percentOf } from "#app/shared/money";
+
+<ProgressMeter (raisedCents: number, goalCents: number, large: boolean = false)>
+  <div class={["progress-meter stack is-xs", large && "is-lg", raisedCents >= goalCents && "is-funded"]}>
+    <div class="progress-meter-figures row is-baseline">
+      <span class="progress-meter-raised">{formatMoney(raisedCents)}</span>
+      <span class="progress-meter-goal text-sm">{percentOf(raisedCents, goalCents)}% of {formatMoney(goalCents)}</span>
+    </div>
+    <div class="progress-meter-track"
+         role="progressbar"
+         aria-label="Raised toward goal"
+         aria-valuemin={0}
+         aria-valuemax={100}
+         aria-valuenow={Math.min(100, percentOf(raisedCents, goalCents))}>
+      <div class="progress-meter-fill" style={`width: ${Math.min(100, percentOf(raisedCents, goalCents))}%`}></div>
+    </div>
+  </div>
+</ProgressMeter>

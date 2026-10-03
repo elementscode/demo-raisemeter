@@ -1,0 +1,83 @@
+@import "#app/shared/styles/page.css";
+
+.page-home .hero {
+  padding-block: var(--space-16) var(--space-10);
+}
+
+.page-home .hero .display {
+  max-width: 16ch;
+}
+
+.page-home .hero .lede {
+  max-width: 60ch;
+}
+
+.page-home .search {
+  max-width: 34rem;
+}
+
+.page-home .search input {
+  flex: 1;
+}
+
+.page-home .campaign-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
+  gap: var(--space-6);
+}
+
+.page-home .campaign-card {
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.page-home .campaign-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.page-home .campaign-card .card-body {
+  flex: 1;
+}
+
+.page-home .campaign-cover {
+  display: block;
+  width: 100%;
+  height: 11rem;
+  object-fit: cover;
+}
+
+.page-home .campaign-card h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+}
+
+.page-home .campaign-meta {
+  justify-content: space-between;
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.page-home .featured .campaign-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(20rem, 100%), 1fr));
+}
+
+.page-home .featured .campaign-cover {
+  height: 13rem;
+}
+
+.page-home .empty {
+  padding: var(--space-10);
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 40rem) {
+  .page-home .hero {
+    padding-block: var(--space-10) var(--space-6);
+  }
+}

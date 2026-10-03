@@ -1,0 +1,50 @@
+import "./style.css";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { Layout } from "#app/shared/templates/layout";
+import { ProgressMeter } from "#app/shared/templates/progress-meter";
+import { CampaignCard } from "#app/shared/services/campaigns";
+import { formatMoney } from "#app/shared/money";
+
+function totalRaised(campaigns: CampaignCard[]): number {
+  return campaigns.reduce((sum, c) => sum + c.raisedCents, 0);
+}
+
+<html lang="en" class="page-dashboard" (name: string, campaigns: CampaignCard[])>
+  <head>
+    <title>Your campaigns · raisemeter</title>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout>
+      <div class="page-shell dash stack is-xl">
+        <div class="dash-head cluster">
+          <div class="stack is-xs">
+            <p class="eyebrow">Signed in as {name}</p>
+            <h1>Your campaigns</h1>
+            <p e:if={campaigns.length} class="hint">{formatMoney(totalRaised(campaigns))} raised across {campaigns.length} {campaigns.length === 1 ? "campaign" : "campaigns"}.</p>
+          </div>
+          <a class="button is-primary" href="/campaigns/new">New campaign</a>
+        </div>
+
+        <div e:if={campaigns.length} class="mine">
+          <div e:for={c of campaigns} class="card mine-item">
+            <img src={c.coverUrl} alt="" width="256" height="176">
+            <div class="stack is-xs">
+              <h2><a href={`/dashboard/c/${c.id}`}>{c.title}</a></h2>
+              <p class="text-sm">{c.donorCount} {c.donorCount === 1 ? "donor" : "donors"} · <a class="link-muted" href={`/c/${c.slug}`}>View public page</a></p>
+            </div>
+            <div class="mine-meter">
+              <ProgressMeter raisedCents={c.raisedCents} goalCents={c.goalCents} />
+            </div>
+          </div>
+        </div>
+
+        <div e:else class="card empty stack is-md">
+          <h2>No campaigns yet</h2>
+          <p class="hint">Tell your neighbors what you're raising for. It takes about five minutes.</p>
+          <div><a class="button is-primary" href="/campaigns/new">Start your first campaign</a></div>
+        </div>
+      </div>
+    </Layout>
+  </body>
+</html>

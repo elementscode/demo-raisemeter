@@ -1,0 +1,93 @@
+import "./style.css";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { Layout } from "#app/shared/templates/layout";
+import { ProgressMeter } from "#app/shared/templates/progress-meter";
+import { CampaignCard, searchCampaigns } from "#app/shared/services/campaigns";
+
+interface Search {
+  query: string;
+  results: CampaignCard[];
+  seq: number;
+}
+
+function onSearch(search: Search) {
+  let seq = ++search.seq;
+  let results = searchCampaigns(search.query);
+
+  // A slower answer to an earlier keystroke must not replace a newer one.
+  if (seq === search.seq) {
+    search.results = results;
+  }
+}
+
+function shown(search: Search, campaigns: CampaignCard[]): CampaignCard[] {
+  return search.query.trim() ? search.results : campaigns.filter((c) => !c.featured);
+}
+
+<html lang="en" class="page-home" (
+  campaigns: CampaignCard[],
+  private search: Search = { query: "", results: campaigns, seq: 0 },
+)>
+  <head>
+    <title>raisemeter · fundraising for community causes</title>
+    <meta name="description" content="Raise money for the garden, the shelter, the library and the court down the street.">
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout>
+      <div class="page-shell">
+        <section class="hero stack is-lg">
+          <p class="eyebrow">Community fundraising</p>
+          <h1 class="display text-balance">Raise money for the causes down the street.</h1>
+          <p class="lede">Gardens, shelters, libraries and courts, funded by the neighbors who use them. Every gift shows up on the campaign the moment it lands.</p>
+          <form class="search row" role="search" onsubmit={() => onSearch(search)}>
+            <input type="search"
+                   aria-label="Search campaigns"
+                   placeholder="Try “library” or “dogs”"
+                   value={search.query}
+                   oninput={() => onSearch(search)}>
+            <button type="submit" class="is-primary">Search</button>
+          </form>
+        </section>
+
+        <section e:if={!search.query.trim()} class="featured section stack is-lg">
+          <h2>Featured campaigns</h2>
+          <div class="campaign-grid">
+            <CampaignTile e:for={c of campaigns.filter((c) => c.featured)} campaign={c} />
+          </div>
+        </section>
+
+        <section id="campaigns" class="section stack is-lg">
+          <h2 e:if={search.query.trim()}>
+            {search.results.length} {search.results.length === 1 ? "campaign matches" : "campaigns match"} “{search.query.trim()}”
+          </h2>
+          <h2 e:else>More campaigns</h2>
+
+          <div e:if={shown(search, campaigns).length} class="campaign-grid">
+            <CampaignTile e:for={c of shown(search, campaigns)} campaign={c} />
+          </div>
+          <div e:else class="card empty">
+            <p>No campaigns match that search yet. <a href="/campaigns/new">Start one</a>.</p>
+          </div>
+        </section>
+      </div>
+    </Layout>
+  </body>
+</html>
+
+<CampaignTile (campaign: CampaignCard)>
+  <a class="card campaign-card" href={`/c/${campaign.slug}`}>
+    <img class="campaign-cover" src={campaign.coverUrl} alt="" width="640" height="360" loading="lazy">
+    <div class="card-body stack is-md">
+      <div class="stack is-xs">
+        <h3>{campaign.title}</h3>
+        <p class="text-sm line-clamp-2">{campaign.summary}</p>
+      </div>
+      <ProgressMeter raisedCents={campaign.raisedCents} goalCents={campaign.goalCents} />
+      <div class="campaign-meta row">
+        <span>by {campaign.organizerName}</span>
+        <span>{campaign.donorCount} {campaign.donorCount === 1 ? "donor" : "donors"}</span>
+      </div>
+    </div>
+  </a>
+</CampaignTile>

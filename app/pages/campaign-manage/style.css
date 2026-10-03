@@ -1,0 +1,78 @@
+@import "#app/shared/styles/page.css";
+
+.page-campaign-manage .manage {
+  padding-block: var(--space-10);
+}
+
+.page-campaign-manage .manage-head {
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.page-campaign-manage .manage-head h1 {
+  margin: 0;
+  font-size: var(--text-3xl);
+  letter-spacing: -0.02em;
+}
+
+.page-campaign-manage .manage-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.page-campaign-manage .stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+.page-campaign-manage .stat strong {
+  display: block;
+  font-size: var(--text-2xl);
+  font-variant-numeric: tabular-nums;
+}
+
+.page-campaign-manage .table-wrap {
+  overflow-x: auto;
+}
+
+.page-campaign-manage td.amount,
+.page-campaign-manage th.amount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.page-campaign-manage td.date {
+  white-space: nowrap;
+  color: var(--ink-soft);
+}
+
+.page-campaign-manage td.message {
+  max-width: 22rem;
+  color: var(--ink-soft);
+}
+
+.page-campaign-manage .update-body {
+  min-height: 9rem;
+}
+
+@media (max-width: 56rem) {
+  .page-campaign-manage .manage-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 40rem) {
+  .page-campaign-manage .email,
+  .page-campaign-manage .message {
+    display: none;
+  }
+}
+
+.page-campaign-manage .manage-grid > form {
+  margin: 0;
+  gap: 0;
+}

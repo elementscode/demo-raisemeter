@@ -1,0 +1,106 @@
+import "./style.css";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { redirect } from "@elements/app";
+import { Layout } from "#app/shared/templates/layout";
+import { signin } from "#app/shared/services/auth";
+
+interface SigninForm {
+  email: string;
+  password: string;
+  error: string;
+}
+
+// The seeded organizers, from the demo seed migration.
+const DEMO_LOGINS = [
+  { name: "Maya Okafor", email: "maya@raisemeter.test", runs: "Garden greenhouse, library reading room" },
+  { name: "Jordan Reyes", email: "jordan@raisemeter.test", runs: "Animal rescue kennels, basketball court" },
+];
+
+const DEMO_PASSWORD = "raisemeter";
+
+function onSubmit(form: SigninForm, next: string) {
+  try {
+    signin(form.email, form.password);
+    form.error = "";
+    redirect(next);
+  } catch (err: any) {
+    form.error = err.message;
+  }
+}
+
+function useDemo(form: SigninForm, email: string) {
+  form.email = email;
+  form.password = DEMO_PASSWORD;
+  form.error = "";
+}
+
+<html lang="en" class="page-signin" (
+  next: string,
+  private form: SigninForm = { email: "", password: "", error: "" },
+)>
+  <head>
+    <title>Sign in · raisemeter</title>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout>
+      <div class="page-shell">
+        <div class="auth stack is-xl">
+          <form class="stack is-lg" onsubmit={() => onSubmit(form, next)}>
+            <div class="stack is-xs">
+              <h1>Sign in</h1>
+              <p class="hint">Organizers sign in to run campaigns. Donors don't need an account.</p>
+            </div>
+
+            <p e:if={form.error} class="error" role="alert">{form.error}</p>
+
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email"
+                     name="email"
+                     type="email"
+                     value={form.email}
+                     autocomplete="email"
+                     autocapitalize="none"
+                     spellcheck={false}
+                     placeholder="you@example.com"
+                     required>
+            </div>
+
+            <div class="field">
+              <label for="password">Password</label>
+              <input id="password"
+                     name="password"
+                     type="password"
+                     value={form.password}
+                     autocomplete="current-password"
+                     required>
+            </div>
+
+            <button type="submit" class="is-primary is-block">Sign in</button>
+
+            <p class="text-sm">New organizer? <a class="link-action" href={`/signup?next=${encodeURIComponent(next)}`}>Create an account</a></p>
+          </form>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>Demo organizers</h2>
+            </div>
+            <div class="card-body stack is-md">
+              <p class="hint">Both use the password <code>{DEMO_PASSWORD}</code>. Pick one to fill the form.</p>
+              <button e:for={d of DEMO_LOGINS}
+                      type="button"
+                      class="demo-login row"
+                      onclick={() => useDemo(form, d.email)}>
+                <span class="stack is-xs">
+                  <strong>{d.name}</strong>
+                  <small>{d.email}</small>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  </body>
+</html>

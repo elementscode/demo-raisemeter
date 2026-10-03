@@ -1,0 +1,82 @@
+@import "#app/shared/styles/page.css";
+
+.site-header {
+  border-bottom: 1px solid var(--rule);
+  background: var(--bg);
+}
+
+.site-header-inner {
+  justify-content: space-between;
+  padding-block: var(--space-4);
+}
+
+.site-brand {
+  gap: var(--space-2);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.site-brand svg {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.site-brand {
+  flex-shrink: 0;
+}
+
+.site-nav {
+  gap: var(--space-5);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.site-nav .nav-signout {
+  padding: 0;
+  min-height: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--ink-soft);
+  font: inherit;
+  cursor: pointer;
+}
+
+.site-nav .nav-signout:hover {
+  color: var(--ink);
+}
+
+.site-footer {
+  border-top: 1px solid var(--rule);
+  margin-top: var(--space-16);
+}
+
+.site-footer-inner {
+  justify-content: space-between;
+  padding-block: var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+@media (max-width: 40rem) {
+  .site-nav {
+    gap: var(--space-3);
+  }
+
+  .site-nav .hide-phone {
+    display: none;
+  }
+}
+
+@media (max-width: 22.5rem) {
+  .site-wordmark {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}

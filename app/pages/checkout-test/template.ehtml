@@ -1,0 +1,106 @@
+import "./style.css";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { redirect, ValidationError } from "@elements/app";
+import { Layout } from "#app/shared/templates/layout";
+import { formatMoney } from "#app/shared/money";
+import { payTestCheckout, TestCheckout } from "./services";
+
+interface PayForm {
+  email: string;
+  error: string;
+  emailError: string;
+  busy: boolean;
+}
+
+function onPay(checkoutId: string, form: PayForm) {
+  form.error = "";
+  form.emailError = "";
+  form.busy = true;
+
+  try {
+    let slug = payTestCheckout(checkoutId, form.email);
+    redirect(`/c/${slug}?thanks=1`);
+  } catch (err: any) {
+    form.busy = false;
+
+    if (err instanceof ValidationError && err.errors?.email) {
+      form.emailError = err.errors.email[0];
+    } else {
+      form.error = err.message;
+    }
+  }
+}
+
+<html lang="en" class="page-checkout-test" (
+  checkout: TestCheckout,
+  private form: PayForm = { email: "", error: "", emailError: "", busy: false },
+)>
+  <head>
+    <title>Checkout · raisemeter</title>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout>
+      <div class="page-shell">
+        <div class="pay stack is-lg">
+          <div class="pay-head row">
+            <h1>Checkout</h1>
+            <span class="pill is-warning"><span class="pill-dot"></span>Test mode</span>
+          </div>
+
+          <form class="card" onsubmit={() => onPay(checkout.id, form)}>
+            <div class="card-body stack is-lg">
+              <div class="pay-line">
+                <img src={checkout.coverUrl} alt="" width="96" height="72">
+                <div class="stack is-xs">
+                  <p class="pay-item">Donation to {checkout.campaignTitle}</p>
+                  <p class="hint">Organized by {checkout.organizerName}</p>
+                </div>
+                <span class="pay-amount">{formatMoney(checkout.amountCents)}</span>
+              </div>
+
+              <div class="pay-wall stack is-xs">
+                <p class="text-sm">On the wall as <strong>{checkout.donorName ?? "Anonymous"}</strong></p>
+                <p e:if={checkout.message} class="pay-message">“{checkout.message}”</p>
+              </div>
+
+              <div class="pay-total row is-baseline">
+                <span>Total</span>
+                <strong>{formatMoney(checkout.amountCents)} <small>USD</small></strong>
+              </div>
+
+              <p e:if={form.error} class="error" role="alert">{form.error}</p>
+
+              <div class="field">
+                <label for="email">Email for your receipt</label>
+                <input id="email"
+                       name="email"
+                       type="email"
+                       autocomplete="email"
+                       autocapitalize="none"
+                       spellcheck={false}
+                       placeholder="you@example.com"
+                       class={[form.emailError && "is-error"]}
+                       value={form.email}
+                       required>
+                <p e:if={form.emailError} class="error">{form.emailError}</p>
+              </div>
+
+              <div class="stack is-sm">
+                <button type="submit" class={["is-primary is-lg is-block", form.busy && "is-loading"]} disabled={form.busy}>
+                  Pay {formatMoney(checkout.amountCents)}
+                </button>
+                <a class="pay-cancel link-muted text-sm" href={`/c/${checkout.campaignSlug}`}>Cancel and go back</a>
+              </div>
+            </div>
+          </form>
+
+          <div class="pay-note stack is-xs">
+            <p class="callout-title">No card is charged here</p>
+            <p>This is the app's test checkout, so donations work before Stripe is connected. Add <code>STRIPE_SECRET_KEY</code> to <code>config/env/development.env</code> and the Donate button goes to real Stripe Checkout.</p>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  </body>
+</html>

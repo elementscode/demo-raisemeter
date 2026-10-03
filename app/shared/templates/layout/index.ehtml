@@ -1,0 +1,42 @@
+import "./style.css";
+import { redirect, session } from "@elements/app";
+import { signout } from "#app/shared/services/auth";
+
+function onSignout() {
+  signout();
+  redirect("/");
+}
+
+<Layout>
+  <div class="app">
+    <header class="site-header">
+      <div class="page-shell site-header-inner row">
+        <a class="site-brand row" href="/">
+          <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <rect x="1" y="1" width="22" height="22" rx="6" fill="currentColor"/>
+            <path d="M6 16.5 L10 12 L13 14.5 L18 8" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <span class="site-wordmark">raisemeter</span>
+        </a>
+        <nav class="site-nav row">
+          <a class="link-muted hide-phone" href="/#campaigns">Browse</a>
+          <a e:if={session.isLoggedIn()} class="link-muted" href="/dashboard">Dashboard</a>
+          <button e:if={session.isLoggedIn()} class="nav-signout link-muted" onclick={() => onSignout()}>Sign out</button>
+          <a e:else class="link-muted" href="/signin">Sign in</a>
+          <a class={["button is-primary is-sm", session.isLoggedIn() && "hide-phone"]} href="/campaigns/new">Start a campaign</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <slot/>
+    </main>
+
+    <footer class="site-footer">
+      <div class="page-shell site-footer-inner cluster">
+        <span>raisemeter · fundraising for the causes down the street</span>
+        <span>Payments by Stripe</span>
+      </div>
+    </footer>
+  </div>
+</Layout>

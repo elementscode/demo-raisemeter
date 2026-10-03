@@ -1,0 +1,182 @@
+import "./style.css";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { LiveView, ValidationError } from "@elements/app";
+import { Layout } from "#app/shared/templates/layout";
+import { ProgressMeter } from "#app/shared/templates/progress-meter";
+import { Donation } from "#app/shared/services/donations";
+import { DonationRecord, postUpdate } from "#app/shared/services/organizer";
+import { formatMoney } from "#app/shared/money";
+import { formatDate, timeAgo } from "#app/shared/time";
+
+const TABLE_ROWS = 50;
+
+interface ManagedCampaign {
+  id: string;
+  slug: string;
+  title: string;
+  goalCents: number;
+}
+
+interface UpdateRow {
+  id: string;
+  title: string;
+  createdAt: Date;
+}
+
+interface UpdateDraft {
+  title: string;
+  body: string;
+  errors: { title?: string[]; body?: string[] };
+  error: string;
+  sent: string;
+  busy: boolean;
+}
+
+function raised(live: LiveView<Donation>): number {
+  return live.reduce((sum, d) => sum + d.amountCents, 0);
+}
+
+function average(live: LiveView<Donation>): number {
+  return live.length ? Math.round(raised(live) / live.length) : 0;
+}
+
+function onPost(campaignId: string, draft: UpdateDraft, updates: UpdateRow[]) {
+  draft.errors = {};
+  draft.error = "";
+  draft.sent = "";
+  draft.busy = true;
+
+  try {
+    let recipients = postUpdate({ campaignId, title: draft.title, body: draft.body });
+
+    updates.unshift({ id: crypto.randomUUID(), title: draft.title.trim(), createdAt: new Date() });
+    draft.sent = `Posted. It's on your campaign page and on its way to ${recipients} ${recipients === 1 ? "donor" : "donors"}.`;
+    draft.title = "";
+    draft.body = "";
+  } catch (err: any) {
+    if (err instanceof ValidationError && err.errors) {
+      draft.errors = err.errors;
+    } else {
+      draft.error = err.message;
+    }
+  }
+
+  draft.busy = false;
+}
+
+<html lang="en" class="page-campaign-manage" (
+  campaign: ManagedCampaign,
+  live: LiveView<Donation>,
+  records: DonationRecord[],
+  updates: UpdateRow[],
+  private draft: UpdateDraft = { title: "", body: "", errors: {}, error: "", sent: "", busy: false },
+)>
+  <head>
+    <title>Manage · {campaign.title} · raisemeter</title>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout>
+      <div class="page-shell manage stack is-xl">
+        <div class="manage-head cluster">
+          <div class="stack is-xs">
+            <p class="eyebrow"><a class="link-muted" href="/dashboard">Your campaigns</a></p>
+            <h1>{campaign.title}</h1>
+          </div>
+          <div class="cluster is-sm">
+            <a class="button" href={`/c/${campaign.slug}`}>View public page</a>
+            <a class="button is-primary" href={`/dashboard/c/${campaign.id}/donations.csv`} download>Download CSV</a>
+          </div>
+        </div>
+
+        <div class="manage-grid">
+          <div class="card">
+            <div class="card-head row">
+              <h2>Progress</h2>
+            </div>
+            <div class="card-body stack is-lg">
+              <ProgressMeter raisedCents={raised(live)} goalCents={campaign.goalCents} large={true} />
+              <div class="stat-row">
+                <div class="stat"><strong>{live.length.toLocaleString("en-US")}</strong><span class="hint">donors</span></div>
+                <div class="stat"><strong>{formatMoney(average(live))}</strong><span class="hint">average gift</span></div>
+                <div class="stat"><strong>{formatMoney(Math.max(0, campaign.goalCents - raised(live)))}</strong><span class="hint">to go</span></div>
+              </div>
+            </div>
+          </div>
+
+          <form class="card" onsubmit={() => onPost(campaign.id, draft, updates)}>
+            <div class="card-head">
+              <h2>Post an update</h2>
+            </div>
+            <div class="card-body stack is-md">
+              <p class="hint">It shows on your campaign page and is emailed to everyone who has given.</p>
+              <p e:if={draft.sent} class="callout is-success" role="status">{draft.sent}</p>
+              <p e:if={draft.error} class="error" role="alert">{draft.error}</p>
+
+              <div class="field">
+                <label for="update-title">Title</label>
+                <input id="update-title" maxlength="120" placeholder="We broke ground!" class={[draft.errors.title && "is-error"]} value={draft.title}>
+                <p e:if={draft.errors.title} class="error">{draft.errors.title?.[0]}</p>
+              </div>
+
+              <div class="field">
+                <label for="update-body">Message</label>
+                <textarea id="update-body" class={["update-body", draft.errors.body && "is-error"]} placeholder="Markdown works here too." value={draft.body}></textarea>
+                <p e:if={draft.errors.body} class="error">{draft.errors.body?.[0]}</p>
+              </div>
+            </div>
+            <div class="card-foot">
+              <button type="submit" class={["is-primary", draft.busy && "is-loading"]} disabled={draft.busy}>Post and email donors</button>
+            </div>
+          </form>
+        </div>
+
+        <section e:if={updates.length} class="card">
+          <div class="card-head">
+            <h2>Posted updates</h2>
+          </div>
+          <div class="card-body">
+            <ul class="stack is-sm">
+              <li e:for={u of updates} class="row is-baseline gap-3">
+                <span class="hint">{formatDate(u.createdAt)}</span>
+                <span>{u.title}</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head row">
+            <h2>Donations</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>When</th>
+                  <th>Name</th>
+                  <th class="email">Email</th>
+                  <th class="message">Message</th>
+                  <th class="amount">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr e:for={r of records.slice(0, TABLE_ROWS)}>
+                  <td class="date">{timeAgo(r.createdAt)}</td>
+                  <td>{r.donorName ?? "Anonymous"}</td>
+                  <td class="email">{r.email}</td>
+                  <td class="message">{r.message}</td>
+                  <td class="amount">{formatMoney(r.amountCents)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div e:if={records.length > TABLE_ROWS} class="card-foot">
+            <span class="hint">Showing the newest {TABLE_ROWS} of {records.length}.</span>
+            <a class="button is-sm" href={`/dashboard/c/${campaign.id}/donations.csv`} download>Download all as CSV</a>
+          </div>
+        </section>
+      </div>
+    </Layout>
+  </body>
+</html>
