@@ -1,0 +1,238 @@
+import "./style.css";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { LiveView, raw, redirect, session, ValidationError } from "@elements/app";
+import { Layout } from "#app/shared/templates/layout";
+import { ProgressMeter } from "#app/shared/templates/progress-meter";
+import { CampaignDetail } from "#app/shared/services/campaigns";
+import { Donation } from "#app/shared/services/donations";
+import { startDonation, MAX_MESSAGE, MAX_NAME } from "#app/shared/services/checkout";
+import { formatMoney } from "#app/shared/money";
+import { formatDate, timeAgo } from "#app/shared/time";
+
+const PRESETS = [25, 50, 100, 250];
+
+interface DonateState {
+  amount: number;
+  name: string;
+  anonymous: boolean;
+  message: string;
+  errors: { amount?: string[]; name?: string[]; message?: string[] };
+  error: string;
+  busy: boolean;
+  open: boolean;
+}
+
+function raised(donations: LiveView<Donation>): number {
+  return donations.reduce((sum, d) => sum + d.amountCents, 0);
+}
+
+function recent(donations: LiveView<Donation>, limit: number): Donation[] {
+  return donations.sort((a, b) => +b.createdAt - +a.createdAt).slice(0, limit);
+}
+
+function isNew(d: Donation): boolean {
+  return Date.now() - +d.createdAt < 15_000;
+}
+
+function initials(name: string | null): string {
+  if (!name) {
+    return "♥";
+  }
+
+  return name.split(/\s+/).filter((w) => /^\p{L}/u.test(w)).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "♥";
+}
+
+async function onDonate(campaignId: string, form: DonateState) {
+  form.errors = {};
+  form.error = "";
+  form.busy = true;
+
+  try {
+    let url = await startDonation({
+      campaignId,
+      amount: Number(form.amount),
+      name: form.name,
+      anonymous: form.anonymous,
+      message: form.message,
+    });
+
+    redirect(url);
+  } catch (err: any) {
+    form.busy = false;
+
+    if (err instanceof ValidationError && err.errors) {
+      form.errors = err.errors;
+    } else {
+      form.error = err.message;
+    }
+  }
+}
+
+<html lang="en" class="page-campaign" (
+  campaign: CampaignDetail,
+  donations: LiveView<Donation>,
+  thanks: boolean,
+  pending: boolean,
+  private wall: { limit: number } = { limit: 8 },
+  private form: DonateState = { amount: 50, name: "", anonymous: false, message: "", errors: {}, error: "", busy: false, open: false },
+)>
+  <head>
+    <title>{campaign.title} · raisemeter</title>
+    <meta name="description" content={campaign.summary}>
+    <meta property="og:image" content={campaign.coverUrl}>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout>
+      <div class="page-shell campaign stack is-xl">
+        <div e:if={thanks} class="callout is-success" role="status">
+          <p class="callout-title">Thank you for your gift.</p>
+          <p>It is on the wall below, and your receipt is on its way to your inbox.</p>
+        </div>
+        <div e:if={pending} class="callout is-info" role="status">
+          <p class="callout-title">Your payment is processing.</p>
+          <p>Your gift will appear on the wall once your bank confirms it.</p>
+        </div>
+
+        <div class="layout-grid">
+          <div class="campaign-top stack is-xl">
+            <img class="cover" src={campaign.coverUrl} alt="" width="1600" height="900">
+
+            <header class="campaign-head stack is-sm">
+              <h1 class="text-balance">{campaign.title}</h1>
+              <p class="lede">{campaign.summary}</p>
+              <p class="text-sm">
+                Organized by <strong>{campaign.organizerName}</strong> · started {formatDate(campaign.createdAt)}
+                <span e:if={session.get("userId") === campaign.organizerId}> · <a class="link-action" href={`/dashboard/c/${campaign.id}`}>Manage this campaign</a></span>
+              </p>
+            </header>
+          </div>
+
+          <div class="campaign-main stack is-xl">
+            <article class="prose story">{raw(campaign.storyHtml)}</article>
+
+            <section e:if={campaign.updates.length} class="stack">
+              <h2>Updates <span class="pill">{campaign.updates.length}</span></h2>
+              <div>
+                <article e:for={u of campaign.updates} class="update stack is-sm">
+                  <p class="eyebrow">{formatDate(u.createdAt)}</p>
+                  <h3>{u.title}</h3>
+                  <div class="prose">{raw(u.bodyHtml)}</div>
+                </article>
+              </div>
+            </section>
+          </div>
+
+          <aside class="sidebar stack is-lg">
+            <div class="card">
+              <div class="card-body stack is-lg">
+                <div class="stack is-sm">
+                  <ProgressMeter raisedCents={raised(donations)} goalCents={campaign.goalCents} large={true} />
+                  <p class="donor-count">
+                    <strong>{donations.length.toLocaleString("en-US")}</strong> {donations.length === 1 ? "donor" : "donors"}
+                  </p>
+                </div>
+
+                <div e:if={!form.open} class="stack is-sm">
+                  <button type="button" class="is-primary is-lg is-block" onclick={() => form.open = true}>Donate</button>
+                  <p class="hint text-center">Any amount, by card through Stripe. You'll get an emailed receipt.</p>
+                </div>
+
+                <form e:else class="stack is-md" onsubmit={() => onDonate(campaign.id, form)}>
+                  <p e:if={form.error} class="error" role="alert">{form.error}</p>
+
+                  <div class="field">
+                    <label for="amount">Amount</label>
+                    <div class="stack is-sm">
+                      <div class="amounts">
+                        <button e:for={p of PRESETS}
+                                type="button"
+                                class={["is-sm", Number(form.amount) === p && "is-primary"]}
+                                aria-pressed={Number(form.amount) === p}
+                                onclick={() => form.amount = p}>${p}</button>
+                      </div>
+                      <div class="amount-input">
+                        <span aria-hidden="true">$</span>
+                        <input id="amount"
+                               name="amount"
+                               type="number"
+                               inputmode="decimal"
+                               min="1"
+                               max="50000"
+                               step="0.01"
+                               class={[form.errors.amount && "is-error"]}
+                               value={form.amount}
+                               required>
+                      </div>
+                    </div>
+                    <p e:if={form.errors.amount} class="error">{form.errors.amount?.[0]}</p>
+                  </div>
+
+                  <div class="field">
+                    <label for="name">Your name</label>
+                    <input id="name"
+                           name="name"
+                           autocomplete="name"
+                           maxlength={MAX_NAME}
+                           placeholder="Shown on the donation wall"
+                           class={[form.errors.name && "is-error"]}
+                           disabled={form.anonymous}
+                           value={form.name}>
+                    <p e:if={form.errors.name} class="error">{form.errors.name?.[0]}</p>
+                  </div>
+
+                  <label class="row is-start gap-2 text-sm">
+                    <input type="checkbox" checked={form.anonymous}>
+                    Give anonymously
+                  </label>
+
+                  <div class="field">
+                    <label for="message">Message <span class="hint">(optional)</span></label>
+                    <textarea id="message"
+                              name="message"
+                              rows="3"
+                              maxlength={MAX_MESSAGE}
+                              placeholder="Say why you're giving"
+                              value={form.message}></textarea>
+                    <p e:if={form.errors.message} class="error">{form.errors.message?.[0]}</p>
+                  </div>
+
+                  <button type="submit" class={["is-primary is-lg is-block", form.busy && "is-loading"]} disabled={form.busy}>
+                    Donate {Number(form.amount) >= 1 ? formatMoney(Math.round(Number(form.amount) * 100)) : ""}
+                  </button>
+                  <p class="hint text-center">Secure card payment by Stripe. You'll get an emailed receipt.</p>
+                </form>
+              </div>
+            </div>
+
+            <section class="card">
+              <div class="card-head row wall-head">
+                <h2>Recent donations</h2>
+                <span class="pill is-success"><span class="pill-dot"></span>Live</span>
+              </div>
+              <div class="card-body">
+                <ol e:if={donations.length} class="wall" aria-live="polite">
+                  <li e:for={d of recent(donations, wall.limit)} class={["wall-item", isNew(d) && "is-new"]}>
+                    <span class="avatar" aria-hidden="true">{initials(d.donorName)}</span>
+                    <div>
+                      <div class="wall-line row is-baseline">
+                        <span class="wall-name truncate">{d.donorName ?? "Anonymous"}</span>
+                        <span class="wall-amount">{formatMoney(d.amountCents)}</span>
+                      </div>
+                      <p e:if={d.message} class="wall-message">{d.message}</p>
+                      <span class="wall-time">{timeAgo(d.createdAt)}</span>
+                    </div>
+                  </li>
+                </ol>
+                <p e:else class="hint">No donations yet. Be the first.</p>
+              </div>
+              <div e:if={donations.length > wall.limit} class="card-foot">
+                <button class="is-ghost is-sm" onclick={() => wall.limit += 25}>Show more</button>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </Layout>
+  </body>
+</html>

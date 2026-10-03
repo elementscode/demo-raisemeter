@@ -1,0 +1,156 @@
+import "./style.css";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { File, raw, redirect, ValidationError } from "@elements/app";
+import { Layout } from "#app/shared/templates/layout";
+import { createCampaign } from "#app/shared/services/organizer";
+import { renderMarkdown } from "#app/shared/markdown";
+
+const STARTER = `Tell people who you are and what you're raising money for.
+
+## What the money buys
+
+- The first thing
+- The second thing
+
+## Who it helps
+
+Say who benefits, and what changes when you hit the goal.`;
+
+interface NewCampaign {
+  title: string;
+  summary: string;
+  story: string;
+  goal: number;
+  cover: File;
+  tab: string;
+  errors: { title?: string[]; summary?: string[]; story?: string[]; goal?: string[]; cover?: string[] };
+  error: string;
+  busy: boolean;
+}
+
+const previews = new WeakMap<File, string>();
+
+function coverPreview(cover: File | undefined): string {
+  if (!cover?.data?.length || typeof URL === "undefined" || !URL.createObjectURL) {
+    return "";
+  }
+
+  let url = previews.get(cover);
+  if (!url) {
+    url = URL.createObjectURL(new Blob([cover.data as BlobPart], { type: cover.contentType }));
+    previews.set(cover, url);
+  }
+
+  return url;
+}
+
+function onSubmit(form: NewCampaign) {
+  form.errors = {};
+  form.error = "";
+  form.busy = true;
+
+  try {
+    let slug = createCampaign({
+      title: form.title,
+      summary: form.summary,
+      story: form.story,
+      goal: Number(form.goal),
+      cover: form.cover,
+    });
+
+    redirect(`/c/${slug}`);
+  } catch (err: any) {
+    form.busy = false;
+
+    if (err instanceof ValidationError && err.errors) {
+      form.errors = err.errors;
+      form.error = "Fix the fields marked below.";
+    } else {
+      form.error = err.message;
+    }
+  }
+}
+
+<html lang="en" class="page-campaign-new" (
+  private form: NewCampaign = {
+    title: "",
+    summary: "",
+    story: STARTER,
+    goal: 5000,
+    cover: undefined as any,
+    tab: "write",
+    errors: {},
+    error: "",
+    busy: false,
+  },
+)>
+  <head>
+    <title>Start a campaign · raisemeter</title>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout>
+      <div class="page-shell is-form new">
+        <form class="stack is-lg" onsubmit={() => onSubmit(form)}>
+          <div class="stack is-xs">
+            <p class="eyebrow"><a class="link-muted" href="/dashboard">Your campaigns</a></p>
+            <h1>Start a campaign</h1>
+            <p class="hint">You can post updates to your donors once it's live.</p>
+          </div>
+
+          <p e:if={form.error} class="callout is-danger" role="alert">{form.error}</p>
+
+          <div class="field">
+            <label for="title">Title</label>
+            <input id="title" name="title" maxlength="100" placeholder="A new roof for the community center" class={[form.errors.title && "is-error"]} value={form.title} required>
+            <p e:if={form.errors.title} class="error">{form.errors.title?.[0]}</p>
+          </div>
+
+          <div class="field">
+            <label for="summary">Summary</label>
+            <input id="summary" name="summary" maxlength="200" placeholder="One line that shows on the campaign card" class={[form.errors.summary && "is-error"]} value={form.summary} required>
+            <p e:if={form.errors.summary} class="error">{form.errors.summary?.[0]}</p>
+          </div>
+
+          <div class="field">
+            <label for="goal">Goal</label>
+            <div class="goal-input">
+              <span aria-hidden="true">$</span>
+              <input id="goal" name="goal" type="number" min="100" step="1" inputmode="numeric" class={[form.errors.goal && "is-error"]} value={form.goal} required>
+            </div>
+            <p e:if={form.errors.goal} class="error">{form.errors.goal?.[0]}</p>
+          </div>
+
+          <div class="field">
+            <label for="cover">Cover photo</label>
+            <img e:if={coverPreview(form.cover)} class="cover-preview" src={coverPreview(form.cover)} alt="Cover preview">
+            <input id="cover" name="cover" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class={[form.errors.cover && "is-error"]} value={form.cover}>
+            <p e:if={form.errors.cover} class="error">{form.errors.cover?.[0]}</p>
+            <p e:else class="hint">A wide photo works best. JPEG, PNG or WebP, up to 5 MB.</p>
+          </div>
+
+          <div class="field">
+            <label for="story">Story</label>
+            <div class="tabs">
+              <div class="tab-list">
+                <button type="button" class={["tab", form.tab === "write" && "is-active"]} onclick={() => form.tab = "write"}>Write</button>
+                <button type="button" class={["tab", form.tab === "preview" && "is-active"]} onclick={() => form.tab = "preview"}>Preview</button>
+              </div>
+              <div class="tab-panel">
+                <textarea e:if={form.tab === "write"} id="story" name="story" class={["story-source", form.errors.story && "is-error"]} value={form.story}></textarea>
+                <div e:else class="story-preview prose">{raw(renderMarkdown(form.story))}</div>
+              </div>
+            </div>
+            <p e:if={form.errors.story} class="error">{form.errors.story?.[0]}</p>
+            <p e:else class="hint">Markdown works: ## headings, **bold**, - lists and [links](https://example.com).</p>
+          </div>
+
+          <div class="form-actions row gap-3">
+            <a class="button is-ghost" href="/dashboard">Cancel</a>
+            <button type="submit" class={["is-primary", form.busy && "is-loading"]} disabled={form.busy}>Publish campaign</button>
+          </div>
+        </form>
+      </div>
+    </Layout>
+  </body>
+</html>

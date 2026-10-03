@@ -1,0 +1,93 @@
+@import "#app/shared/styles/page.css";
+
+.page-checkout-test .pay {
+  max-width: 30rem;
+  margin-inline: auto;
+  padding-block: var(--space-12);
+}
+
+.page-checkout-test .pay-head {
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.page-checkout-test .pay-head h1 {
+  margin: 0;
+  font-size: var(--text-3xl);
+  letter-spacing: -0.02em;
+}
+
+.page-checkout-test .pay-line {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.page-checkout-test .pay-line img {
+  display: block;
+  width: 4.5rem;
+  height: 3.5rem;
+  object-fit: cover;
+  border-radius: var(--radius-control);
+}
+
+.page-checkout-test .pay-item {
+  font-weight: 600;
+  line-height: var(--leading-tight);
+}
+
+.page-checkout-test .pay-amount {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.page-checkout-test .pay-wall {
+  padding: var(--space-3) var(--space-4);
+  background: var(--accent-soft);
+  border-radius: var(--radius-control);
+}
+
+.page-checkout-test .pay-message {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+.page-checkout-test .pay-total {
+  justify-content: space-between;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+}
+
+.page-checkout-test .pay-total strong {
+  font-size: var(--text-2xl);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.page-checkout-test .pay-total small {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.page-checkout-test .pay-cancel {
+  align-self: center;
+}
+
+.page-checkout-test .pay-note {
+  padding-inline: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.page-checkout-test .pay-note .callout-title {
+  color: var(--ink);
+}
+
+@media (max-width: 40rem) {
+  .page-checkout-test .pay {
+    padding-block: var(--space-8);
+  }
+}

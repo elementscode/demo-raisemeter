@@ -1,0 +1,33 @@
+@import "#app/shared/styles/page.css";
+
+.auth {
+  max-width: 26rem;
+  margin-inline: auto;
+  padding-block: var(--space-12);
+}
+
+.auth h1 {
+  margin: 0;
+  font-size: var(--text-3xl);
+  letter-spacing: -0.02em;
+}
+
+.auth .demo-login {
+  justify-content: space-between;
+  width: 100%;
+  text-align: start;
+}
+
+.auth .demo-login small {
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+}
+
+.auth .demo-login {
+  height: auto;
+  padding: var(--space-3) var(--space-4);
+}
+
+.auth .demo-login .stack {
+  align-items: flex-start;
+}

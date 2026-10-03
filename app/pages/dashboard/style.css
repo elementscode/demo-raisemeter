@@ -1,0 +1,59 @@
+@import "#app/shared/styles/page.css";
+
+.page-dashboard .dash {
+  padding-block: var(--space-10);
+}
+
+.page-dashboard .dash-head {
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.page-dashboard .dash-head h1 {
+  margin: 0;
+}
+
+.page-dashboard .mine {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.page-dashboard .mine-item {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr) 16rem;
+  gap: var(--space-5);
+  align-items: center;
+  padding: var(--space-4);
+}
+
+.page-dashboard .mine-item img {
+  width: 8rem;
+  height: 5.5rem;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+.page-dashboard .mine-item h2 {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.page-dashboard .empty {
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+}
+
+@media (max-width: 48rem) {
+  .page-dashboard .mine-item {
+    grid-template-columns: 5rem minmax(0, 1fr);
+  }
+
+  .page-dashboard .mine-item img {
+    width: 5rem;
+    height: 4rem;
+  }
+
+  .page-dashboard .mine-item .mine-meter {
+    grid-column: 1 / -1;
+  }
+}

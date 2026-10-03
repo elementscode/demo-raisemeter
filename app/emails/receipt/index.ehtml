@@ -1,0 +1,66 @@
+import "./style.css";
+import { formatMoney } from "#app/shared/money";
+
+export interface ReceiptDetails {
+  donorName: string | null;
+  amountCents: number;
+  message: string;
+  campaignTitle: string;
+  campaignSlug: string;
+  organizerName: string;
+  receiptNumber: string;
+  paidAt: Date;
+}
+
+/**
+ * The thank-you and receipt a donor gets once Stripe confirms the payment.
+ *
+ * @email
+ */
+<html (receipt: ReceiptDetails)>
+  <body class="email receipt">
+    <div class="email-wrap">
+      <h1>Thank you{receipt.donorName ? `, ${receipt.donorName}` : ""}.</h1>
+      <p>Your gift to <strong>{receipt.campaignTitle}</strong> is in, and it is already on the campaign page.</p>
+
+      <p class="amount">{formatMoney(receipt.amountCents)}</p>
+
+      <table class="details" role="presentation">
+        <tr>
+          <td class="label">Receipt</td>
+          <td class="value">{receipt.receiptNumber}</td>
+        </tr>
+        <tr>
+          <td class="label">Date</td>
+          <td class="value">{receipt.paidAt.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</td>
+        </tr>
+        <tr>
+          <td class="label">Campaign</td>
+          <td class="value">{receipt.campaignTitle}</td>
+        </tr>
+        <tr>
+          <td class="label">Organizer</td>
+          <td class="value">{receipt.organizerName}</td>
+        </tr>
+        <tr>
+          <td class="label">Shown on the wall as</td>
+          <td class="value">{receipt.donorName ?? "Anonymous"}</td>
+        </tr>
+        <tr>
+          <td class="label">Amount paid</td>
+          <td class="value"><strong>{formatMoney(receipt.amountCents)} USD</strong></td>
+        </tr>
+      </table>
+
+      <p e:if={receipt.message}>Your message: “{receipt.message}”</p>
+
+      <p><a class="cta" href={`/c/${receipt.campaignSlug}`}>See the campaign</a></p>
+
+      <p>You will get the organizer's updates by email as the campaign goes on.</p>
+
+      <div class="email-footer">
+        <p>raisemeter · Payment processed by Stripe. Keep this email for your records.</p>
+      </div>
+    </div>
+  </body>
+</html>

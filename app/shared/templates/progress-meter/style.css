@@ -1,0 +1,53 @@
+@import "#app/shared/styles/page.css";
+
+.progress-meter {
+  --meter-height: 0.625rem;
+}
+
+.progress-meter.is-lg {
+  --meter-height: 0.875rem;
+}
+
+.progress-meter-track {
+  height: var(--meter-height);
+  border-radius: var(--radius-full);
+  background: var(--bg-muted);
+  overflow: hidden;
+}
+
+.progress-meter-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.progress-meter.is-funded .progress-meter-fill {
+  background: var(--success);
+}
+
+.progress-meter-figures {
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-meter-raised {
+  font-weight: var(--weight-semibold);
+  color: var(--ink);
+}
+
+.progress-meter-goal {
+  color: var(--ink-soft);
+}
+
+.progress-meter.is-lg .progress-meter-raised {
+  font-size: var(--text-3xl);
+  letter-spacing: -0.02em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-meter-fill {
+    transition: none;
+  }
+}

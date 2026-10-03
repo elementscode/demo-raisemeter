@@ -1,0 +1,191 @@
+@import "#app/shared/styles/page.css";
+
+.page-campaign .campaign {
+  padding-block: var(--space-8) 0;
+}
+
+.page-campaign .cover {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-surface);
+}
+
+.page-campaign .campaign-head h1 {
+  margin: 0;
+  font-size: clamp(var(--text-3xl), 3.4vw, var(--text-4xl));
+  line-height: var(--leading-tight);
+  letter-spacing: -0.025em;
+}
+
+.page-campaign .layout-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24rem;
+  grid-template-areas:
+    "top side"
+    "main side";
+  gap: var(--space-8) var(--space-10);
+  align-items: start;
+}
+
+.page-campaign .campaign-top {
+  grid-area: top;
+}
+
+.page-campaign .campaign-main {
+  grid-area: main;
+}
+
+.page-campaign .sidebar {
+  grid-area: side;
+}
+
+.page-campaign .wall-head {
+  justify-content: space-between;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.page-campaign .donor-count {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.page-campaign .donor-count strong {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.page-campaign .amounts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+
+.page-campaign .amount-input {
+  position: relative;
+}
+
+.page-campaign .amount-input span {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: var(--space-3);
+  display: flex;
+  align-items: center;
+  color: var(--ink-soft);
+  pointer-events: none;
+}
+
+.page-campaign .amount-input input {
+  padding-inline-start: var(--space-7);
+  font-variant-numeric: tabular-nums;
+}
+
+.page-campaign .wall {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.page-campaign .wall-item {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-2);
+  margin-inline: calc(var(--space-2) * -1);
+  border-radius: var(--radius-md);
+}
+
+.page-campaign .wall-item.is-new {
+  animation: wall-arrive 1600ms ease-out;
+}
+
+@keyframes wall-arrive {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+    background: var(--accent-soft);
+  }
+
+  20% {
+    opacity: 1;
+    transform: none;
+  }
+
+  100% {
+    background: transparent;
+  }
+}
+
+.page-campaign .avatar {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-full);
+  background: var(--accent-soft);
+  color: var(--accent-deep);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.page-campaign .wall-line {
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.page-campaign .wall-name {
+  font-weight: var(--weight-medium);
+}
+
+.page-campaign .wall-amount {
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.page-campaign .wall-message {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+
+.page-campaign .wall-time {
+  font-size: var(--text-xs);
+  color: var(--ink-dim);
+}
+
+.page-campaign .update {
+  padding-block: var(--space-5);
+  border-top: 1px solid var(--rule);
+}
+
+.page-campaign .update h3 {
+  margin: 0;
+}
+
+.page-campaign .story img {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 60rem) {
+  .page-campaign .layout-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "top"
+      "side"
+      "main";
+    gap: var(--space-8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-campaign .wall-item.is-new {
+    animation: none;
+  }
+}
