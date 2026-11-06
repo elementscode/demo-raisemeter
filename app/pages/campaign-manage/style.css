@@ -34,29 +34,15 @@
   font-variant-numeric: tabular-nums;
 }
 
-.page-campaign-manage .table-wrap {
-  overflow-x: auto;
-}
-
-.page-campaign-manage td.amount,
-.page-campaign-manage th.amount {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
 .page-campaign-manage td.date {
-  white-space: nowrap;
   color: var(--ink-soft);
 }
 
 .page-campaign-manage td.message {
+  min-width: 14rem;
   max-width: 22rem;
+  white-space: normal;
   color: var(--ink-soft);
-}
-
-.page-campaign-manage .update-body {
-  min-height: 9rem;
 }
 
 @media (max-width: 56rem) {

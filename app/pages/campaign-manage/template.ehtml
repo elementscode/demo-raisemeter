@@ -7,6 +7,13 @@ import { Donation } from "#app/shared/services/donations";
 import { DonationRecord, postUpdate } from "#app/shared/services/organizer";
 import { formatMoney } from "#app/shared/money";
 import { formatDate, timeAgo } from "#app/shared/time";
+import { Alert } from "@elements/ui/alert";
+import { Button } from "@elements/ui/button";
+import { Card, CardContent, CardFooter } from "@elements/ui/card";
+import { Field } from "@elements/ui/field";
+import { Input } from "@elements/ui/input";
+import { Table, TableCell, TableHead } from "@elements/ui/table";
+import { Textarea } from "@elements/ui/textarea";
 
 const TABLE_ROWS = 50;
 
@@ -84,97 +91,87 @@ function onPost(campaignId: string, draft: UpdateDraft, updates: UpdateRow[]) {
             <h1>{campaign.title}</h1>
           </div>
           <div class="cluster is-sm">
-            <a class="button" href={`/c/${campaign.slug}`}>View public page</a>
-            <a class="button is-primary" href={`/dashboard/c/${campaign.id}/donations.csv`} download>Download CSV</a>
+            <Button href={`/c/${campaign.slug}`}>View public page</Button>
+            <Button variant="primary" href={`/dashboard/c/${campaign.id}/donations.csv`} attrs={{ download: true }}>Download CSV</Button>
           </div>
         </div>
 
         <div class="manage-grid">
-          <div class="card">
-            <div class="card-head row">
-              <h2>Progress</h2>
-            </div>
-            <div class="card-body stack is-lg">
+          <Card title="Progress" level={2}>
+            <CardContent class="stack is-lg">
               <ProgressMeter raisedCents={raised(live)} goalCents={campaign.goalCents} large={true} />
               <div class="stat-row">
                 <div class="stat"><strong>{live.length.toLocaleString("en-US")}</strong><span class="hint">donors</span></div>
                 <div class="stat"><strong>{formatMoney(average(live))}</strong><span class="hint">average gift</span></div>
                 <div class="stat"><strong>{formatMoney(Math.max(0, campaign.goalCents - raised(live)))}</strong><span class="hint">to go</span></div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <form class="card" onsubmit={() => onPost(campaign.id, draft, updates)}>
-            <div class="card-head">
-              <h2>Post an update</h2>
-            </div>
-            <div class="card-body stack is-md">
-              <p class="hint">It shows on your campaign page and is emailed to everyone who has given.</p>
-              <p e:if={draft.sent} class="callout is-success" role="status">{draft.sent}</p>
-              <p e:if={draft.error} class="error" role="alert">{draft.error}</p>
+          <form onsubmit={() => onPost(campaign.id, draft, updates)}>
+            <Card title="Post an update" level={2}>
+              <CardContent class="stack is-md">
+                <p class="hint">It shows on your campaign page and is emailed to everyone who has given.</p>
+                <Alert e:if={draft.sent} variant="success" role="status" description={draft.sent} />
+                <Alert e:if={draft.error} variant="danger" description={draft.error} />
 
-              <div class="field">
-                <label for="update-title">Title</label>
-                <input id="update-title" maxlength="120" placeholder="We broke ground!" class={[draft.errors.title && "is-error"]} value={draft.title}>
-                <p e:if={draft.errors.title} class="error">{draft.errors.title?.[0]}</p>
-              </div>
+                <Field label="Title" error={draft.errors.title?.[0] ?? ""}>
+                  <Input placeholder="We broke ground!" value={draft.title} attrs={{ maxlength: 120 }} />
+                </Field>
 
-              <div class="field">
-                <label for="update-body">Message</label>
-                <textarea id="update-body" class={["update-body", draft.errors.body && "is-error"]} placeholder="Markdown works here too." value={draft.body}></textarea>
-                <p e:if={draft.errors.body} class="error">{draft.errors.body?.[0]}</p>
-              </div>
-            </div>
-            <div class="card-foot">
-              <button type="submit" class={["is-primary", draft.busy && "is-loading"]} disabled={draft.busy}>Post and email donors</button>
-            </div>
+                <Field label="Message" error={draft.errors.body?.[0] ?? ""}>
+                  <Textarea rows={5} placeholder="Markdown works here too." value={draft.body} />
+                </Field>
+              </CardContent>
+              <CardFooter>
+                <Button type="submit" variant="primary" loading={draft.busy}>Post and email donors</Button>
+              </CardFooter>
+            </Card>
           </form>
         </div>
 
-        <section e:if={updates.length} class="card">
-          <div class="card-head">
-            <h2>Posted updates</h2>
-          </div>
-          <div class="card-body">
-            <ul class="stack is-sm">
-              <li e:for={u of updates} class="row is-baseline gap-3">
-                <span class="hint">{formatDate(u.createdAt)}</span>
-                <span>{u.title}</span>
-              </li>
-            </ul>
-          </div>
+        <section e:if={updates.length} aria-label="Posted updates">
+          <Card title="Posted updates" level={2}>
+            <CardContent>
+              <ul class="stack is-sm">
+                <li e:for={u of updates} class="row is-baseline gap-3">
+                  <span class="hint">{formatDate(u.createdAt)}</span>
+                  <span>{u.title}</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
         </section>
 
-        <section class="card">
-          <div class="card-head row">
-            <h2>Donations</h2>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>When</th>
-                  <th>Name</th>
-                  <th class="email">Email</th>
-                  <th class="message">Message</th>
-                  <th class="amount">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr e:for={r of records.slice(0, TABLE_ROWS)}>
-                  <td class="date">{timeAgo(r.createdAt)}</td>
-                  <td>{r.donorName ?? "Anonymous"}</td>
-                  <td class="email">{r.email}</td>
-                  <td class="message">{r.message}</td>
-                  <td class="amount">{formatMoney(r.amountCents)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div e:if={records.length > TABLE_ROWS} class="card-foot">
-            <span class="hint">Showing the newest {TABLE_ROWS} of {records.length}.</span>
-            <a class="button is-sm" href={`/dashboard/c/${campaign.id}/donations.csv`} download>Download all as CSV</a>
-          </div>
+        <section aria-label="Donations">
+          <Card title="Donations" level={2}>
+            <Table label="Donations">
+              <table>
+                <thead>
+                  <tr>
+                    <TableHead>When</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead class="email">Email</TableHead>
+                    <TableHead class="message">Message</TableHead>
+                    <TableHead align="end">Amount</TableHead>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr e:for={r of records.slice(0, TABLE_ROWS)}>
+                    <TableCell class="date">{timeAgo(r.createdAt)}</TableCell>
+                    <TableCell>{r.donorName ?? "Anonymous"}</TableCell>
+                    <TableCell class="email">{r.email}</TableCell>
+                    <TableCell class="message">{r.message}</TableCell>
+                    <TableCell align="end">{formatMoney(r.amountCents)}</TableCell>
+                  </tr>
+                </tbody>
+              </table>
+            </Table>
+            <CardFooter e:if={records.length > TABLE_ROWS}>
+              <span class="hint">Showing the newest {TABLE_ROWS} of {records.length}.</span>
+              <Button size="sm" href={`/dashboard/c/${campaign.id}/donations.csv`} attrs={{ download: true }}>Download all as CSV</Button>
+            </CardFooter>
+          </Card>
         </section>
       </div>
     </Layout>
