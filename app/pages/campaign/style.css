@@ -42,12 +42,6 @@
   grid-area: side;
 }
 
-.page-campaign .wall-head {
-  justify-content: space-between;
-  padding-bottom: 0;
-  border-bottom: 0;
-}
-
 .page-campaign .donor-count {
   font-size: var(--text-sm);
   color: var(--ink-soft);
@@ -61,25 +55,9 @@
 .page-campaign .amounts {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-2);
 }
 
 .page-campaign .amount-input {
-  position: relative;
-}
-
-.page-campaign .amount-input span {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: var(--space-3);
-  display: flex;
-  align-items: center;
-  color: var(--ink-soft);
-  pointer-events: none;
-}
-
-.page-campaign .amount-input input {
-  padding-inline-start: var(--space-7);
   font-variant-numeric: tabular-nums;
 }
 
@@ -93,7 +71,7 @@
 
 .page-campaign .wall-item {
   display: grid;
-  grid-template-columns: 2.25rem minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   gap: var(--space-3);
   padding: var(--space-3) var(--space-2);
   margin-inline: calc(var(--space-2) * -1);
@@ -119,18 +97,6 @@
   100% {
     background: transparent;
   }
-}
-
-.page-campaign .avatar {
-  display: grid;
-  place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: var(--radius-full);
-  background: var(--accent-soft);
-  color: var(--accent-deep);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
 }
 
 .page-campaign .wall-line {

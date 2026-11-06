@@ -8,11 +8,22 @@ import { Donation } from "#app/shared/services/donations";
 import { startDonation, MAX_MESSAGE, MAX_NAME } from "#app/shared/services/checkout";
 import { formatMoney } from "#app/shared/money";
 import { formatDate, timeAgo } from "#app/shared/time";
+import { Alert } from "@elements/ui/alert";
+import { Avatar } from "@elements/ui/avatar";
+import { Badge } from "@elements/ui/badge";
+import { Button } from "@elements/ui/button";
+import { Card, CardAction, CardContent, CardFooter } from "@elements/ui/card";
+import { Checkbox } from "@elements/ui/checkbox";
+import { Field, FieldLabel } from "@elements/ui/field";
+import { Input } from "@elements/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupText } from "@elements/ui/input-group";
+import { Textarea } from "@elements/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@elements/ui/toggle-group";
 
-const PRESETS = [25, 50, 100, 250];
+const PRESETS = ["25", "50", "100", "250"];
 
 interface DonateState {
-  amount: number;
+  amount: string;
   name: string;
   anonymous: boolean;
   message: string;
@@ -74,7 +85,7 @@ async function onDonate(campaignId: string, form: DonateState) {
   thanks: boolean,
   pending: boolean,
   private wall: { limit: number } = { limit: 8 },
-  private form: DonateState = { amount: 50, name: "", anonymous: false, message: "", errors: {}, error: "", busy: false, open: false },
+  private form: DonateState = { amount: "50", name: "", anonymous: false, message: "", errors: {}, error: "", busy: false, open: false },
 )>
   <head>
     <title>{campaign.title} · raisemeter</title>
@@ -85,14 +96,8 @@ async function onDonate(campaignId: string, form: DonateState) {
   <body>
     <Layout>
       <div class="page-shell campaign stack is-xl">
-        <div e:if={thanks} class="callout is-success" role="status">
-          <p class="callout-title">Thank you for your gift.</p>
-          <p>It is on the wall below, and your receipt is on its way to your inbox.</p>
-        </div>
-        <div e:if={pending} class="callout is-info" role="status">
-          <p class="callout-title">Your payment is processing.</p>
-          <p>Your gift will appear on the wall once your bank confirms it.</p>
-        </div>
+        <Alert e:if={thanks} variant="success" role="status" title="Thank you for your gift." description="It is on the wall below, and your receipt is on its way to your inbox." />
+        <Alert e:if={pending} variant="info" role="status" title="Your payment is processing." description="Your gift will appear on the wall once your bank confirms it." />
 
         <div class="layout-grid">
           <div class="campaign-top stack is-xl">
@@ -112,7 +117,7 @@ async function onDonate(campaignId: string, form: DonateState) {
             <article class="prose story">{raw(campaign.storyHtml)}</article>
 
             <section e:if={campaign.updates.length} class="stack">
-              <h2>Updates <span class="pill">{campaign.updates.length}</span></h2>
+              <h2>Updates <Badge variant="secondary">{campaign.updates.length}</Badge></h2>
               <div>
                 <article e:for={u of campaign.updates} class="update stack is-sm">
                   <p class="eyebrow">{formatDate(u.createdAt)}</p>
@@ -124,8 +129,8 @@ async function onDonate(campaignId: string, form: DonateState) {
           </div>
 
           <aside class="sidebar stack is-lg">
-            <div class="card">
-              <div class="card-body stack is-lg">
+            <Card>
+              <CardContent class="stack is-lg">
                 <div class="stack is-sm">
                   <ProgressMeter raisedCents={raised(donations)} goalCents={campaign.goalCents} large={true} />
                   <p class="donor-count">
@@ -134,101 +139,88 @@ async function onDonate(campaignId: string, form: DonateState) {
                 </div>
 
                 <div e:if={!form.open} class="stack is-sm">
-                  <button type="button" class="is-primary is-lg is-block" onclick={() => form.open = true}>Donate</button>
+                  <Button variant="primary" size="lg" block onclick={() => form.open = true}>Donate</Button>
                   <p class="hint text-center">Any amount, by card through Stripe. You'll get an emailed receipt.</p>
                 </div>
 
                 <form e:else class="stack is-md" onsubmit={() => onDonate(campaign.id, form)}>
-                  <p e:if={form.error} class="error" role="alert">{form.error}</p>
+                  <Alert e:if={form.error} variant="danger" description={form.error} />
 
-                  <div class="field">
-                    <label for="amount">Amount</label>
+                  <Field label="Amount" error={form.errors.amount?.[0] ?? ""}>
                     <div class="stack is-sm">
-                      <div class="amounts">
-                        <button e:for={p of PRESETS}
-                                type="button"
-                                class={["is-sm", Number(form.amount) === p && "is-primary"]}
-                                aria-pressed={Number(form.amount) === p}
-                                onclick={() => form.amount = p}>${p}</button>
-                      </div>
-                      <div class="amount-input">
-                        <span aria-hidden="true">$</span>
-                        <input id="amount"
+                      <ToggleGroup type="single"
+                                   variant="outline"
+                                   size="sm"
+                                   class="amounts"
+                                   label="Preset amounts"
+                                   value={form.amount}
+                                   onValueChange={(v, details) => !v && details.cancel()}>
+                        <ToggleGroupItem e:for={p of PRESETS} value={p}>${p}</ToggleGroupItem>
+                      </ToggleGroup>
+                      <InputGroup>
+                        <InputGroupAddon><InputGroupText>$</InputGroupText></InputGroupAddon>
+                        <Input type="number"
                                name="amount"
-                               type="number"
-                               inputmode="decimal"
-                               min="1"
-                               max="50000"
-                               step="0.01"
-                               class={[form.errors.amount && "is-error"]}
+                               class="amount-input"
                                value={form.amount}
-                               required>
-                      </div>
+                               required
+                               attrs={{ inputmode: "decimal", min: 1, max: 50000, step: 0.01 }} />
+                      </InputGroup>
                     </div>
-                    <p e:if={form.errors.amount} class="error">{form.errors.amount?.[0]}</p>
-                  </div>
+                  </Field>
 
-                  <div class="field">
-                    <label for="name">Your name</label>
-                    <input id="name"
-                           name="name"
-                           autocomplete="name"
-                           maxlength={MAX_NAME}
+                  <Field label="Your name" error={form.errors.name?.[0] ?? ""}>
+                    <Input name="name"
                            placeholder="Shown on the donation wall"
-                           class={[form.errors.name && "is-error"]}
                            disabled={form.anonymous}
-                           value={form.name}>
-                    <p e:if={form.errors.name} class="error">{form.errors.name?.[0]}</p>
-                  </div>
+                           value={form.name}
+                           attrs={{ autocomplete: "name", maxlength: MAX_NAME }} />
+                  </Field>
 
-                  <label class="row is-start gap-2 text-sm">
-                    <input type="checkbox" checked={form.anonymous}>
-                    Give anonymously
-                  </label>
+                  <Field orientation="horizontal" label="Give anonymously" reserveError={false}>
+                    <Checkbox checked={form.anonymous} />
+                  </Field>
 
-                  <div class="field">
-                    <label for="message">Message <span class="hint">(optional)</span></label>
-                    <textarea id="message"
-                              name="message"
-                              rows="3"
+                  <Field error={form.errors.message?.[0] ?? ""}>
+                    <FieldLabel>Message <span class="hint">(optional)</span></FieldLabel>
+                    <Textarea name="message"
+                              rows={3}
                               maxlength={MAX_MESSAGE}
                               placeholder="Say why you're giving"
-                              value={form.message}></textarea>
-                    <p e:if={form.errors.message} class="error">{form.errors.message?.[0]}</p>
-                  </div>
+                              value={form.message} />
+                  </Field>
 
-                  <button type="submit" class={["is-primary is-lg is-block", form.busy && "is-loading"]} disabled={form.busy}>
+                  <Button type="submit" variant="primary" size="lg" block loading={form.busy}>
                     Donate {Number(form.amount) >= 1 ? formatMoney(Math.round(Number(form.amount) * 100)) : ""}
-                  </button>
+                  </Button>
                   <p class="hint text-center">Secure card payment by Stripe. You'll get an emailed receipt.</p>
                 </form>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            <section class="card">
-              <div class="card-head row wall-head">
-                <h2>Recent donations</h2>
-                <span class="pill is-success"><span class="pill-dot"></span>Live</span>
-              </div>
-              <div class="card-body">
-                <ol e:if={donations.length} class="wall" aria-live="polite">
-                  <li e:for={d of recent(donations, wall.limit)} class={["wall-item", isNew(d) && "is-new"]}>
-                    <span class="avatar" aria-hidden="true">{initials(d.donorName)}</span>
-                    <div>
-                      <div class="wall-line row is-baseline">
-                        <span class="wall-name truncate">{d.donorName ?? "Anonymous"}</span>
-                        <span class="wall-amount">{formatMoney(d.amountCents)}</span>
+            <section aria-label="Recent donations">
+              <Card title="Recent donations" level={2}>
+                <CardAction slot="action"><Badge variant="success" dot>Live</Badge></CardAction>
+                <CardContent>
+                  <ol e:if={donations.length} class="wall" aria-live="polite">
+                    <li e:for={d of recent(donations, wall.limit)} class={["wall-item", isNew(d) && "is-new"]}>
+                      <Avatar fallback={initials(d.donorName)} />
+                      <div>
+                        <div class="wall-line row is-baseline">
+                          <span class="wall-name truncate">{d.donorName ?? "Anonymous"}</span>
+                          <span class="wall-amount">{formatMoney(d.amountCents)}</span>
+                        </div>
+                        <p e:if={d.message} class="wall-message">{d.message}</p>
+                        <span class="wall-time">{timeAgo(d.createdAt)}</span>
                       </div>
-                      <p e:if={d.message} class="wall-message">{d.message}</p>
-                      <span class="wall-time">{timeAgo(d.createdAt)}</span>
-                    </div>
-                  </li>
-                </ol>
-                <p e:else class="hint">No donations yet. Be the first.</p>
-              </div>
-              <div e:if={donations.length > wall.limit} class="card-foot">
-                <button class="is-ghost is-sm" onclick={() => wall.limit += 25}>Show more</button>
-              </div>
+                    </li>
+                  </ol>
+                  <p e:else class="hint">No donations yet. Be the first.</p>
+                </CardContent>
+                <CardFooter e:if={donations.length > wall.limit}>
+                  <Button variant="link" size="sm" onclick={() => wall.limit += 25}>Show more</Button>
+                </CardFooter>
+              </Card>
             </section>
           </aside>
         </div>
