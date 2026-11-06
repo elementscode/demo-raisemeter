@@ -12,7 +12,7 @@ import { Alert } from "@elements/ui/alert";
 import { Avatar } from "@elements/ui/avatar";
 import { Badge } from "@elements/ui/badge";
 import { Button } from "@elements/ui/button";
-import { Card, CardAction, CardContent, CardFooter } from "@elements/ui/card";
+import { Card, CardContent, CardFooter } from "@elements/ui/card";
 import { Checkbox } from "@elements/ui/checkbox";
 import { Field, FieldLabel } from "@elements/ui/field";
 import { Input } from "@elements/ui/input";
@@ -177,7 +177,7 @@ async function onDonate(campaignId: string, form: DonateState) {
                            attrs={{ autocomplete: "name", maxlength: MAX_NAME }} />
                   </Field>
 
-                  <Field orientation="horizontal" label="Give anonymously" reserveError={false}>
+                  <Field orientation="horizontal" label="Give anonymously">
                     <Checkbox checked={form.anonymous} />
                   </Field>
 
@@ -198,9 +198,9 @@ async function onDonate(campaignId: string, form: DonateState) {
               </CardContent>
             </Card>
 
-            <section aria-label="Recent donations">
-              <Card title="Recent donations" level={2}>
-                <CardAction slot="action"><Badge variant="success" dot>Live</Badge></CardAction>
+            <section aria-labelledby="wall-title">
+              <Card title="Recent donations" level={2} titleId="wall-title">
+                <Badge slot="action" variant="success" dot>Live</Badge>
                 <CardContent>
                   <ol e:if={donations.length} class="wall" aria-live="polite">
                     <li e:for={d of recent(donations, wall.limit)} class={["wall-item", isNew(d) && "is-new"]}>
