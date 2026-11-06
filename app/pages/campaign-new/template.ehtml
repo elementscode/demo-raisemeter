@@ -28,7 +28,7 @@ interface NewCampaign {
   summary: string;
   story: string;
   goal: string;
-  cover: File;
+  cover: File[];
   tab: string;
   errors: { title?: string[]; summary?: string[]; story?: string[]; goal?: string[]; cover?: string[] };
   error: string;
@@ -62,7 +62,7 @@ function onSubmit(form: NewCampaign) {
       summary: form.summary,
       story: form.story,
       goal: Number(form.goal),
-      cover: form.cover,
+      cover: form.cover[0],
     });
 
     redirect(`/c/${slug}`);
@@ -84,7 +84,7 @@ function onSubmit(form: NewCampaign) {
     summary: "",
     story: STARTER,
     goal: "5000",
-    cover: undefined as any,
+    cover: [],
     tab: "write",
     errors: {},
     error: "",
@@ -124,8 +124,8 @@ function onSubmit(form: NewCampaign) {
             </Field>
 
             <Field label="Cover photo" description="A wide photo works best. JPEG, PNG or WebP, up to 5 MB." error={form.errors.cover?.[0] ?? ""}>
-              <img e:if={coverPreview(form.cover)} class="cover-preview" src={coverPreview(form.cover)} alt="Cover preview">
-              <input id="cover" name="cover" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class={[form.errors.cover && "is-error"]} value={form.cover}>
+              <img e:if={coverPreview(form.cover[0])} class="cover-preview" src={coverPreview(form.cover[0])} alt="Cover preview">
+              <Input type="file" name="cover" files={form.cover} attrs={{ accept: "image/jpeg,image/png,image/webp,image/gif" }} />
             </Field>
 
             <Field label="Story" description="Markdown works: ## headings, **bold**, - lists and [links](https://example.com)." error={form.errors.story?.[0] ?? ""}>

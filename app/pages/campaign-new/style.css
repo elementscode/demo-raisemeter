@@ -36,18 +36,3 @@
 .page-campaign-new .form-actions {
   justify-content: flex-end;
 }
-
-.page-campaign-new input[type="file"]::file-selector-button {
-  margin-right: var(--space-3);
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius-md);
-  background: var(--bg-panel);
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-
-.page-campaign-new input[type="file"] {
-  font-size: var(--text-sm);
-}
