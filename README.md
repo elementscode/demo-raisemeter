@@ -6,6 +6,8 @@
 
 Campaigns with a story, cover photo and live progress bar, card donations on a donor wall, emailed receipts, and updates to donors.
 
+Raisemeter uses the `marketing` theme from @elements/ui.
+
 [Run this app on your machine](https://elements.dev/demos/01a0f443-f318-7f44-aa1b-ecda51aa76f5). Use this demo as inspiration, or as the starting point for your own app. Your agent creates a new app with this one as the scaffold, and you prompt it to add whatever features you want.
 
 ## Payments
