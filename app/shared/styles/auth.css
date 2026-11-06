@@ -15,17 +15,14 @@
 .auth .demo-login {
   justify-content: space-between;
   width: 100%;
+  height: auto;
+  padding: var(--space-3) var(--space-4);
   text-align: start;
 }
 
 .auth .demo-login small {
   color: var(--ink-soft);
   font-family: var(--font-mono);
-}
-
-.auth .demo-login {
-  height: auto;
-  padding: var(--space-3) var(--space-4);
 }
 
 .auth .demo-login .stack {
