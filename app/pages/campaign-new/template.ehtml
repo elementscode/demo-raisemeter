@@ -4,6 +4,13 @@ import { File, raw, redirect, ValidationError } from "@elements/app";
 import { Layout } from "#app/shared/templates/layout";
 import { createCampaign } from "#app/shared/services/organizer";
 import { renderMarkdown } from "#app/shared/markdown";
+import { Alert } from "@elements/ui/alert";
+import { Button } from "@elements/ui/button";
+import { Field, FieldGroup } from "@elements/ui/field";
+import { Input } from "@elements/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupText } from "@elements/ui/input-group";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@elements/ui/tabs";
+import { Textarea } from "@elements/ui/textarea";
 
 const STARTER = `Tell people who you are and what you're raising money for.
 
@@ -20,7 +27,7 @@ interface NewCampaign {
   title: string;
   summary: string;
   story: string;
-  goal: number;
+  goal: string;
   cover: File;
   tab: string;
   errors: { title?: string[]; summary?: string[]; story?: string[]; goal?: string[]; cover?: string[] };
@@ -76,7 +83,7 @@ function onSubmit(form: NewCampaign) {
     title: "",
     summary: "",
     story: STARTER,
-    goal: 5000,
+    goal: "5000",
     cover: undefined as any,
     tab: "write",
     errors: {},
@@ -98,56 +105,48 @@ function onSubmit(form: NewCampaign) {
             <p class="hint">You can post updates to your donors once it's live.</p>
           </div>
 
-          <p e:if={form.error} class="callout is-danger" role="alert">{form.error}</p>
+          <Alert e:if={form.error} variant="danger" description={form.error} />
 
-          <div class="field">
-            <label for="title">Title</label>
-            <input id="title" name="title" maxlength="100" placeholder="A new roof for the community center" class={[form.errors.title && "is-error"]} value={form.title} required>
-            <p e:if={form.errors.title} class="error">{form.errors.title?.[0]}</p>
-          </div>
+          <FieldGroup>
+            <Field label="Title" error={form.errors.title?.[0] ?? ""}>
+              <Input name="title" placeholder="A new roof for the community center" value={form.title} required attrs={{ maxlength: 100 }} />
+            </Field>
 
-          <div class="field">
-            <label for="summary">Summary</label>
-            <input id="summary" name="summary" maxlength="200" placeholder="One line that shows on the campaign card" class={[form.errors.summary && "is-error"]} value={form.summary} required>
-            <p e:if={form.errors.summary} class="error">{form.errors.summary?.[0]}</p>
-          </div>
+            <Field label="Summary" error={form.errors.summary?.[0] ?? ""}>
+              <Input name="summary" placeholder="One line that shows on the campaign card" value={form.summary} required attrs={{ maxlength: 200 }} />
+            </Field>
 
-          <div class="field">
-            <label for="goal">Goal</label>
-            <div class="goal-input">
-              <span aria-hidden="true">$</span>
-              <input id="goal" name="goal" type="number" min="100" step="1" inputmode="numeric" class={[form.errors.goal && "is-error"]} value={form.goal} required>
-            </div>
-            <p e:if={form.errors.goal} class="error">{form.errors.goal?.[0]}</p>
-          </div>
+            <Field label="Goal" error={form.errors.goal?.[0] ?? ""}>
+              <InputGroup class="goal-input">
+                <InputGroupAddon><InputGroupText>$</InputGroupText></InputGroupAddon>
+                <Input type="number" name="goal" value={form.goal} required attrs={{ min: 100, step: 1, inputmode: "numeric" }} />
+              </InputGroup>
+            </Field>
 
-          <div class="field">
-            <label for="cover">Cover photo</label>
-            <img e:if={coverPreview(form.cover)} class="cover-preview" src={coverPreview(form.cover)} alt="Cover preview">
-            <input id="cover" name="cover" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class={[form.errors.cover && "is-error"]} value={form.cover}>
-            <p e:if={form.errors.cover} class="error">{form.errors.cover?.[0]}</p>
-            <p e:else class="hint">A wide photo works best. JPEG, PNG or WebP, up to 5 MB.</p>
-          </div>
+            <Field label="Cover photo" description="A wide photo works best. JPEG, PNG or WebP, up to 5 MB." error={form.errors.cover?.[0] ?? ""}>
+              <img e:if={coverPreview(form.cover)} class="cover-preview" src={coverPreview(form.cover)} alt="Cover preview">
+              <input id="cover" name="cover" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class={[form.errors.cover && "is-error"]} value={form.cover}>
+            </Field>
 
-          <div class="field">
-            <label for="story">Story</label>
-            <div class="tabs">
-              <div class="tab-list">
-                <button type="button" class={["tab", form.tab === "write" && "is-active"]} onclick={() => form.tab = "write"}>Write</button>
-                <button type="button" class={["tab", form.tab === "preview" && "is-active"]} onclick={() => form.tab = "preview"}>Preview</button>
-              </div>
-              <div class="tab-panel">
-                <textarea e:if={form.tab === "write"} id="story" name="story" class={["story-source", form.errors.story && "is-error"]} value={form.story}></textarea>
-                <div e:else class="story-preview prose">{raw(renderMarkdown(form.story))}</div>
-              </div>
-            </div>
-            <p e:if={form.errors.story} class="error">{form.errors.story?.[0]}</p>
-            <p e:else class="hint">Markdown works: ## headings, **bold**, - lists and [links](https://example.com).</p>
-          </div>
+            <Field label="Story" description="Markdown works: ## headings, **bold**, - lists and [links](https://example.com)." error={form.errors.story?.[0] ?? ""}>
+              <Tabs value={form.tab}>
+                <TabsList label="Story">
+                  <TabsTrigger value="write">Write</TabsTrigger>
+                  <TabsTrigger value="preview">Preview</TabsTrigger>
+                </TabsList>
+                <TabsContent value="write">
+                  <Textarea name="story" class="story-source" rows={12} value={form.story} />
+                </TabsContent>
+                <TabsContent value="preview">
+                  <div class="story-preview prose">{raw(renderMarkdown(form.story))}</div>
+                </TabsContent>
+              </Tabs>
+            </Field>
+          </FieldGroup>
 
           <div class="form-actions row gap-3">
-            <a class="button is-ghost" href="/dashboard">Cancel</a>
-            <button type="submit" class={["is-primary", form.busy && "is-loading"]} disabled={form.busy}>Publish campaign</button>
+            <Button variant="ghost" href="/dashboard">Cancel</Button>
+            <Button type="submit" variant="primary" loading={form.busy}>Publish campaign</Button>
           </div>
         </form>
       </div>
