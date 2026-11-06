@@ -38,11 +38,6 @@
   font-size: var(--text-lg);
 }
 
-.page-dashboard .empty {
-  padding: var(--space-12) var(--space-6);
-  text-align: center;
-}
-
 @media (max-width: 48rem) {
   .page-dashboard .mine-item {
     grid-template-columns: 5rem minmax(0, 1fr);
