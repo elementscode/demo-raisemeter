@@ -130,8 +130,8 @@ function onPost(campaignId: string, draft: UpdateDraft, updates: UpdateRow[]) {
           </form>
         </div>
 
-        <section e:if={updates.length} aria-label="Posted updates">
-          <Card title="Posted updates" level={2}>
+        <section e:if={updates.length} aria-labelledby="updates-title">
+          <Card title="Posted updates" level={2} titleId="updates-title">
             <CardContent>
               <ul class="stack is-sm">
                 <li e:for={u of updates} class="row is-baseline gap-3">
@@ -143,8 +143,8 @@ function onPost(campaignId: string, draft: UpdateDraft, updates: UpdateRow[]) {
           </Card>
         </section>
 
-        <section aria-label="Donations">
-          <Card title="Donations" level={2}>
+        <section aria-labelledby="donations-title">
+          <Card title="Donations" level={2} titleId="donations-title">
             <Table label="Donations">
               <table>
                 <thead>
@@ -152,7 +152,7 @@ function onPost(campaignId: string, draft: UpdateDraft, updates: UpdateRow[]) {
                     <TableHead>When</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead class="email">Email</TableHead>
-                    <TableHead class="message">Message</TableHead>
+                    <TableHead class="message" wrap>Message</TableHead>
                     <TableHead align="end">Amount</TableHead>
                   </tr>
                 </thead>
@@ -161,7 +161,7 @@ function onPost(campaignId: string, draft: UpdateDraft, updates: UpdateRow[]) {
                     <TableCell class="date">{timeAgo(r.createdAt)}</TableCell>
                     <TableCell>{r.donorName ?? "Anonymous"}</TableCell>
                     <TableCell class="email">{r.email}</TableCell>
-                    <TableCell class="message">{r.message}</TableCell>
+                    <TableCell class="message" wrap>{r.message}</TableCell>
                     <TableCell align="end">{formatMoney(r.amountCents)}</TableCell>
                   </tr>
                 </tbody>

@@ -41,7 +41,6 @@
 .page-campaign-manage td.message {
   min-width: 14rem;
   max-width: 22rem;
-  white-space: normal;
   color: var(--ink-soft);
 }
 
