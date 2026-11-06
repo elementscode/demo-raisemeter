@@ -3,6 +3,10 @@ import favicon from "#app/shared/assets/favicons/favicon.svg";
 import { redirect } from "@elements/app";
 import { Layout } from "#app/shared/templates/layout";
 import { signup, MIN_PASSWORD } from "#app/shared/services/auth";
+import { Alert } from "@elements/ui/alert";
+import { Button } from "@elements/ui/button";
+import { Field, FieldGroup } from "@elements/ui/field";
+import { Input } from "@elements/ui/input";
 
 interface SignupForm {
   name: string;
@@ -39,39 +43,32 @@ function onSubmit(form: SignupForm, next: string) {
               <p class="hint">Create an organizer account, then set up your campaign.</p>
             </div>
 
-            <p e:if={form.error} class="error" role="alert">{form.error}</p>
+            <Alert e:if={form.error} variant="danger" description={form.error} />
 
-            <div class="field">
-              <label for="name">Your name</label>
-              <input id="name" name="name" value={form.name} autocomplete="name" placeholder="Shown on your campaigns" required>
-            </div>
+            <FieldGroup>
+              <Field label="Your name">
+                <Input name="name" value={form.name} placeholder="Shown on your campaigns" required attrs={{ autocomplete: "name" }} />
+              </Field>
 
-            <div class="field">
-              <label for="email">Email</label>
-              <input id="email"
-                     name="email"
-                     type="email"
-                     value={form.email}
-                     autocomplete="email"
-                     autocapitalize="none"
-                     spellcheck={false}
-                     placeholder="you@example.com"
-                     required>
-            </div>
+              <Field label="Email">
+                <Input name="email"
+                       type="email"
+                       value={form.email}
+                       placeholder="you@example.com"
+                       required
+                       attrs={{ autocomplete: "email", autocapitalize: "none", spellcheck: "false" }} />
+              </Field>
 
-            <div class="field">
-              <label for="password">Password</label>
-              <input id="password"
-                     name="password"
-                     type="password"
-                     value={form.password}
-                     autocomplete="new-password"
-                     minlength={MIN_PASSWORD}
-                     required>
-              <p class="hint">At least {MIN_PASSWORD} characters.</p>
-            </div>
+              <Field label="Password" description={`At least ${MIN_PASSWORD} characters.`}>
+                <Input name="password"
+                       type="password"
+                       value={form.password}
+                       required
+                       attrs={{ autocomplete: "new-password", minlength: MIN_PASSWORD }} />
+              </Field>
+            </FieldGroup>
 
-            <button type="submit" class="is-primary is-block">Create account</button>
+            <Button type="submit" variant="primary" block>Create account</Button>
 
             <p class="text-sm">Already have an account? <a class="link-action" href={`/signin?next=${encodeURIComponent(next)}`}>Sign in</a></p>
           </form>
